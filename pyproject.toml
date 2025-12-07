@@ -1,6 +1,6 @@
 [project]
 name = "ctx-i18n"
-version = "0.1.0"
+version = "0.1.1"
 description = "Context-aware internationalization utility for Python"
 requires-python = ">=3.14"
 license = { text = "MIT" }

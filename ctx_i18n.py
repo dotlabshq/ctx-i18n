@@ -37,12 +37,12 @@ def load_translations(locale_str: str, base_path: Optional[Path] = None):
     with open(path, "r", encoding="utf-8") as f:
         return yaml.safe_load(f)
 
-def set_locale(locale_str: str):
+def set_locale(locale_str: str, base_path: Optional[Path] = None):
     """
     Sets the locale and loads the corresponding translations into the context.
     """
     locale.set(locale_str)
-    loaded_translations = load_translations(locale_str)
+    loaded_translations = load_translations(locale_str, base_path=base_path)
     translations.set(loaded_translations)
 
 def _(key: str, **kwargs) -> str:

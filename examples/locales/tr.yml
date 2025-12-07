@@ -1,0 +1,3 @@
+app_name: "FastAPI i18n Örneği"
+welcome_message: "FastAPI i18n örneğine hoş geldiniz, {name}!"
+current_language: "Mevcut dil Türkçe."

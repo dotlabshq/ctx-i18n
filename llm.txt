@@ -1,0 +1,154 @@
+# ==============================================================================
+# PROMPT: HOW TO USE THE ctx-i18n LIBRARY
+# ==============================================================================
+
+# GOAL: This document guides a chatbot or LLM assistant on how to use the
+# `ctx-i18n` Python library for context-aware internationalization.
+
+# ------------------------------------------------------------------------------
+# 1. OVERVIEW
+# ------------------------------------------------------------------------------
+
+# `ctx-i18n` is a simple Python library for internationalization (i18n) that
+# uses ContextVars to manage the current language (locale). This makes it
+# thread-safe and suitable for concurrent applications like web servers.
+
+# Core Functions:
+# - `set_locale(locale: str)`: Sets the current language for the active context.
+# - `_(key: str, **kwargs)`: Translates a given key into the current language.
+
+# ------------------------------------------------------------------------------
+# 2. INSTALLATION
+# ------------------------------------------------------------------------------
+
+# To use this library, first install it via pip:
+# pip install ctx-i18n
+
+# You will also need PyYAML:
+# pip install PyYAML
+
+# ------------------------------------------------------------------------------
+# 3. SETUP AND USAGE
+# ------------------------------------------------------------------------------
+
+# 1. Create a `locales` directory in your project.
+#    This is where `ctx-i18n` will look for your translation files.
+
+# 2. Create YAML translation files inside the `locales` directory.
+#    For example, `locales/en.yml` and `locales/tr.yml`.
+
+#    `locales/en.yml`:
+#    greeting: "Hello, {name}!"
+#    farewell: "Goodbye."
+
+#    `locales/tr.yml`:
+#    greeting: "Merhaba, {name}!"
+#    farewell: "Hoşçakal."
+
+# 3. Set the `APP_PATH` environment variable to the directory containing your
+#    `locales` folder. This tells the library where to find the files.
+
+# ------------------------------------------------------------------------------
+# 4. CODE EXAMPLE (SIMPLE SCRIPT)
+# ------------------------------------------------------------------------------
+
+# This example shows the basic usage in a Python script.
+
+import os
+from pathlib import Path
+from ctx_i18n import set_locale, _
+
+# --- Setup ---
+# Set the APP_PATH to the directory containing the 'locales' folder.
+# For this example, assume 'locales' is in the current directory.
+os.environ["APP_PATH"] = str(Path.cwd())
+
+# --- Usage ---
+# Set the locale to Turkish
+set_locale("tr")
+print(_("greeting", name="World"))  # Output: Merhaba, World!
+
+# Set the locale to English
+set_locale("en")
+print(_("greeting", name="World"))  # Output: Hello, World!
+
+# If a translation is not found, the key is returned
+print(_("non.existent.key"))      # Output: non.existent.key
+
+# ------------------------------------------------------------------------------
+# 5. WEB FRAMEWORK EXAMPLE (FLASK)
+# ------------------------------------------------------------------------------
+
+# `ctx-i18n` is ideal for web apps. Here's how to use it with Flask.
+# The same principles apply to FastAPI or other frameworks.
+
+from flask import Flask, request
+from pathlib import Path
+import os
+from ctx_i18n import set_locale, _
+
+app = Flask(__name__)
+
+# Set APP_PATH to the directory containing the 'locales' folder.
+os.environ["APP_PATH"] = str(Path(__file__).parent)
+
+@app.before_request
+def set_language_from_request():
+    # Set locale from a query param (e.g., /?lang=tr) or header
+    lang = request.args.get("lang") or request.headers.get("Accept-Language", "en")
+    set_locale(lang.split(',')[0].split('-')[0])
+
+@app.route("/")
+def home():
+    # The `_` function will automatically use the locale set in the middleware.
+    return f"<h1>{_('greeting', name='User')}</h1>"
+
+# To run this Flask example:
+# 1. Save it as `app.py`.
+# 2. Make sure you have a `locales` directory next to it.
+# 3. Run `flask run` or `python app.py`.
+# 4. Visit http://127.0.0.1:5000/?lang=tr and http://127.0.0.1:5000/?lang=en
+
+# ------------------------------------------------------------------------------
+# 6. WEB FRAMEWORK EXAMPLE (FASTAPI)
+# ------------------------------------------------------------------------------
+
+# NOTE: This example might not run on Python 3.14 due to dependency
+# incompatibilities (pydantic-core, watchfiles) with PyO3.
+# It is provided for reference.
+
+# `ctx-i18n` also works seamlessly with FastAPI.
+
+from fastapi import FastAPI, Request
+from typing import Optional
+from pathlib import Path
+import os
+from ctx_i18n import set_locale, _
+
+app = FastAPI()
+
+# Set APP_PATH to the directory containing the 'locales' folder.
+os.environ["APP_PATH"] = str(Path(__file__).parent)
+
+@app.middleware("http")
+async def set_language_middleware(request: Request, call_next):
+    # Set locale from a query param (e.g., /?lang=tr) or header
+    lang = request.query_params.get("lang") or request.headers.get("Accept-Language", "en").split(',')[0].split('-')[0]
+    set_locale(lang)
+    response = await call_next(request)
+    return response
+
+@app.get("/")
+async def home(name: str = "User"):
+    # The `_` function will automatically use the locale set in the middleware.
+    return {
+        "app_name": _("app_name"),
+        "welcome_message": _("welcome_message", name=name),
+        "current_language": _("current_language"),
+    }
+
+# To run this FastAPI example (on a compatible Python version):
+# 1. Save it as `app_fastapi.py`.
+# 2. Make sure you have a `locales` directory next to it.
+# 3. Run `uvicorn app_fastapi:app --reload`.
+# 4. Visit http://127.0.0.1:8000/?lang=tr and http://127.0.0.1:8000/?lang=en

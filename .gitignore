@@ -1,0 +1,28 @@
+# Byte-code files
+*.pyc
+__pycache__/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Editor/IDE specific files
+.vscode/
+.idea/
+
+# Test/coverage related files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Distribution/packaging
+dist/
+build/
+*.egg-info/
+
+# Operating system generated files
+.DS_Store
+
+# Logs
+*.log

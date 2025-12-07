@@ -1,0 +1,3 @@
+app_name: "FastAPI i18n Example"
+welcome_message: "Welcome to the FastAPI i18n example, {name}!"
+current_language: "Current language is English."
